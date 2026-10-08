@@ -2,6 +2,8 @@
 
 A modular Python framework for structural engineering design automation and IS 456:2000 code compliance checks.
 
+Released under the **MIT License**.
+
 ---
 
 ## 1. Project Description
@@ -12,7 +14,17 @@ It provides a transparent domain engine with full mathematical traceability, exp
 
 ---
 
-## 2. Implemented Functionality & IS 456:2000 Modules
+## 2. Project Status
+
+- **Current Version:** `v0.1.0`
+- **Phase 1 Engine:** Reinforced Concrete Rectangular Beam Design Engine completed.
+- **Automated Tests:** 18 / 18 unit tests passing cleanly.
+- **Verification:** Comprehensive hand-calculated verification report included ([`examples/verification_report.md`](file:///c:/JEEVAN/StructAI/examples/verification_report.md)).
+- **Development Status:** Active open-source development planned across multi-phase roadmap.
+
+---
+
+## 3. Implemented Functionality & IS 456:2000 Modules
 
 StructAI v0.1.0 includes the following core engineering design modules:
 
@@ -47,15 +59,24 @@ StructAI v0.1.0 includes the following core engineering design modules:
 
 ---
 
-## 3. Verification & Test Status
+## 4. Development Roadmap
 
-- **Automated Unit Test Suite:** 18 out of 18 tests passing cleanly (`python -m unittest discover -s tests`).
-- **Engineering Verification Report:** Complete step-by-step hand calculations documented in [`examples/verification_report.md`](file:///c:/JEEVAN/StructAI/examples/verification_report.md).
-- **Sample Demonstration:** Executable verification script in [`examples/sample_beam_calc.py`](file:///c:/JEEVAN/StructAI/examples/sample_beam_calc.py).
+- **Phase 1 — RC Beam Design [COMPLETED]**
+  - Singly reinforced flexural limit state, shear stirrup design, development length, and deflection control checks.
+- **Phase 2 — Engineering Workflow Improvements**
+  - Doubly reinforced rectangular beams, flanged sections (T-beams/L-beams), and combined torsion design (Clause 41).
+- **Phase 3 — Excel Integration**
+  - Automated spreadsheet export/import for calculation sheets and structural schedules.
+- **Phase 4 — ETABS Result Integration**
+  - Parser and design validation engine for ETABS design output forces and member geometry.
+- **Phase 5 — AI Engineering Assistant**
+  - Natural language calculation querying, code lookup assistant, and automated design recommendations.
+- **Phase 6 — IS 456:2025 Draft Comparison**
+  - Comparative code analysis and impact reports against proposed IS 456 revision drafts.
 
 ---
 
-## 4. Known Limitations (Phase 1 Scope)
+## 5. Known Limitations (Phase 1 Scope)
 
 - **Doubly Reinforced Flexure:** Doubly reinforced design ($M_u > M_{u,lim}$) flags a requirement warning and is postponed to Phase 2.
 - **Flanged Sections:** T-Beam / L-Beam flexural design and Fig. 6 deflection factor $F_3$ are currently marked as `NOT_IMPLEMENTED`.
@@ -64,7 +85,7 @@ StructAI v0.1.0 includes the following core engineering design modules:
 
 ---
 
-## 5. Engineering Disclaimer
+## 6. Engineering Disclaimer
 
 > [!CAUTION]
 > **IMPORTANT DISCLAIMER:**
@@ -74,7 +95,13 @@ StructAI v0.1.0 includes the following core engineering design modules:
 
 ---
 
-## 6. Installation & Usage
+## 7. License
+
+Distributed under the **MIT License**. See [`LICENSE`](file:///c:/JEEVAN/StructAI/LICENSE) for full details.
+
+---
+
+## 8. Installation & Usage
 
 ```bash
 # Run automated test suite
