@@ -119,6 +119,8 @@ class IS456BeamDesignEngine:
             if check.status == CheckStatus.FAIL:
                 all_checks_pass = False
                 summary_notes.append(f"CHECK FAILED: {check.check_name} ({check.clause})")
+            elif check.status == CheckStatus.NOT_IMPLEMENTED:
+                summary_notes.append(f"SCOPE LIMITATION: {check.check_name} ({check.clause}) is NOT_IMPLEMENTED.")
 
         if flexure_res.is_doubly_reinforced_required:
             all_checks_pass = False

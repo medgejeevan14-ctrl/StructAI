@@ -247,7 +247,7 @@ def perform_detailing_checks(
         )
     )
 
-    # Check 4: Maximum Stirrup Spacing Code Limit (Cl 26.5.1.5)
+    # Check 4a: Maximum Stirrup Spacing Code Limit (Cl 26.5.1.5)
     code_spacing_pass = sv_prov <= shear_res.sv_max_code_limit_mm + 1e-3
     code_checks.append(
         CodeCheckResult(
@@ -262,6 +262,35 @@ def perform_detailing_checks(
             else f"Stirrup spacing ({sv_prov:.1f} mm) > min(0.75d, 300mm) ({shear_res.sv_max_code_limit_mm:.1f} mm)",
         )
     )
+
+    # Check 4b: Required Stirrup Spacing for Shear Strength (Cl 40.4)
+    if shear_res.shear_reinforcement_required and shear_res.sv_req_calc_mm is not None:
+        strength_spacing_pass = sv_prov <= shear_res.sv_req_calc_mm + 1e-3
+        code_checks.append(
+            CodeCheckResult(
+                check_name="Stirrup Spacing for Shear Strength",
+                clause="IS 456:2000 Cl 40.4",
+                status=CheckStatus.PASS if strength_spacing_pass else CheckStatus.FAIL,
+                demand=sv_prov,
+                capacity=shear_res.sv_req_calc_mm,
+                unit="mm",
+                message=f"Provided stirrup spacing ({sv_prov:.1f} mm) <= Required spacing for shear strength V_us ({shear_res.sv_req_calc_mm:.1f} mm)"
+                if strength_spacing_pass
+                else f"Provided stirrup spacing ({sv_prov:.1f} mm) > Required spacing for shear strength V_us ({shear_res.sv_req_calc_mm:.1f} mm)",
+            )
+        )
+    else:
+        code_checks.append(
+            CodeCheckResult(
+                check_name="Stirrup Spacing for Shear Strength",
+                clause="IS 456:2000 Cl 40.4",
+                status=CheckStatus.NOT_APPLICABLE,
+                demand=0.0,
+                capacity=shear_res.governing_max_spacing_mm,
+                unit="mm",
+                message=f"Nominal shear stress tau_v ({shear_res.tau_v_Nmm2:.3f} N/mm²) <= tau_c ({shear_res.tau_c_Nmm2:.3f} N/mm²); stirrups not required for net shear strength.",
+            )
+        )
 
     # Check 5: Minimum Shear Reinforcement Spacing Limit (Cl 26.5.1.6)
     min_shear_pass = sv_prov <= shear_res.sv_req_min_rebar_mm + 1e-3
@@ -334,7 +363,7 @@ def perform_detailing_checks(
             )
         )
 
-    # Check 8: Flanged Beam Deflection Factor (Fig 6) - Marked as NOT_IMPLEMENTED
+    # Check 8: Flanged Beam Deflection Factor (Fig 6)
     code_checks.append(
         CodeCheckResult(
             check_name="Flanged Beam Deflection Modification (Fig 6)",
