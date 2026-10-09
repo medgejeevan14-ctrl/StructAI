@@ -97,5 +97,40 @@ class TestIS456BeamEngine(unittest.TestCase):
         self.assertFalse(res.is_overall_pass)
 
 
+class TestDatatypeValidation(unittest.TestCase):
+
+    def test_beam_geometry_invalid_inputs(self):
+        """Test that invalid beam geometry values raise ValueError."""
+        with self.assertRaises(ValueError):
+            BeamGeometry(b=300.0, D=600.0, d=550.0, d_prime=-10.0)
+        with self.assertRaises(ValueError):
+            BeamGeometry(b=300.0, D=600.0, d=550.0, d_prime=600.0)
+        with self.assertRaises(ValueError):
+            BeamGeometry(b=300.0, D=600.0, d=550.0, span=-1000.0)
+
+    def test_material_properties_invalid_inputs(self):
+        """Test that invalid material properties raise ValueError."""
+        with self.assertRaises(ValueError):
+            MaterialProperties(f_ck=25.0, f_y=500.0, E_s=0.0)
+
+    def test_factored_loads_invalid_inputs(self):
+        """Test that negative factored loads raise ValueError."""
+        with self.assertRaises(ValueError):
+            FactoredLoads(M_u=-10.0, V_u=50.0)
+        with self.assertRaises(ValueError):
+            FactoredLoads(M_u=50.0, V_u=-5.0)
+        with self.assertRaises(ValueError):
+            FactoredLoads(M_u=50.0, V_u=50.0, T_u=-1.0)
+
+    def test_stirrup_details_invalid_inputs(self):
+        """Test that invalid stirrup details raise ValueError."""
+        with self.assertRaises(ValueError):
+            StirrupDetails(num_legs=0, bar_diameter=8.0, spacing=150.0)
+        with self.assertRaises(ValueError):
+            StirrupDetails(num_legs=2, bar_diameter=-8.0, spacing=150.0)
+        with self.assertRaises(ValueError):
+            StirrupDetails(num_legs=2, bar_diameter=8.0, spacing=0.0)
+
+
 if __name__ == "__main__":
     unittest.main()

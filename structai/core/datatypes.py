@@ -61,6 +61,10 @@ class BeamGeometry:
             raise ValueError(f"Overall depth D must be positive, got {self.D} mm")
         if self.d <= 0 or self.d >= self.D:
             raise ValueError(f"Effective depth d ({self.d} mm) must be positive and less than overall depth D ({self.D} mm)")
+        if self.d_prime < 0 or self.d_prime >= self.D:
+            raise ValueError(f"Compression cover d' ({self.d_prime} mm) must be non-negative and less than overall depth D ({self.D} mm)")
+        if self.span is not None and self.span <= 0:
+            raise ValueError(f"Span must be positive when provided, got {self.span} mm")
 
 
 @dataclass
@@ -90,6 +94,8 @@ class MaterialProperties:
             self.f_yv = self.f_y
         elif self.f_yv <= 0:
             raise ValueError(f"Stirrup steel grade f_yv must be positive, got {self.f_yv} N/mm²")
+        if self.E_s <= 0:
+            raise ValueError(f"Modulus of elasticity E_s must be positive, got {self.E_s} N/mm²")
 
 
 @dataclass
@@ -105,6 +111,14 @@ class FactoredLoads:
     M_u: float
     V_u: float
     T_u: float = 0.0
+
+    def __post_init__(self):
+        if self.M_u < 0:
+            raise ValueError(f"Factored bending moment M_u cannot be negative, got {self.M_u} kNm")
+        if self.V_u < 0:
+            raise ValueError(f"Factored shear force V_u cannot be negative, got {self.V_u} kN")
+        if self.T_u < 0:
+            raise ValueError(f"Factored torsion T_u cannot be negative, got {self.T_u} kNm")
 
     @property
     def M_u_Nmm(self) -> float:
@@ -130,6 +144,14 @@ class StirrupDetails:
     num_legs: int
     bar_diameter: float
     spacing: float
+
+    def __post_init__(self):
+        if self.num_legs <= 0:
+            raise ValueError(f"Stirrup number of legs must be positive, got {self.num_legs}")
+        if self.bar_diameter <= 0:
+            raise ValueError(f"Stirrup bar diameter must be positive, got {self.bar_diameter} mm")
+        if self.spacing <= 0:
+            raise ValueError(f"Stirrup spacing must be positive, got {self.spacing} mm")
 
     @property
     def A_sv(self) -> float:
