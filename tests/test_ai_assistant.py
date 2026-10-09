@@ -160,6 +160,16 @@ Hope this structural evaluation helps!"""
         self.assertEqual(res.overall_summary, "Analysis completed (narrative format).")
         self.assertEqual(res.detailed_explanation, raw)
 
+    def test_parse_claude_response_incomplete_or_malformed_json_fallback(self):
+        """13. Test fallback handling for incomplete or malformed JSON payloads."""
+        incomplete_raw = """```json
+{
+    "overall_summary": "Incomplete JSON payload truncated mid-sentence
+"""
+        res = parse_claude_response(incomplete_raw)
+        self.assertEqual(res.overall_summary, "Analysis completed (narrative format).")
+        self.assertEqual(res.detailed_explanation, incomplete_raw)
+
 
 if __name__ == "__main__":
     unittest.main()

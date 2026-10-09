@@ -142,6 +142,22 @@ class TestStructAIUIIntegration(unittest.TestCase):
         max_spacing_check = [c for c in summary.detailing.code_checks if "Code Limit" in c.check_name][0]
         self.assertEqual(max_spacing_check.status, CheckStatus.FAIL)
 
+    def test_ui_failure_banner_triggers_on_excessive_moment_and_shear(self):
+        """7. Test that excessive moment (Mu > Mu_lim) or shear (tau_v > tau_c_max) triggers failure state."""
+        # 1. Excessive moment (Mu = 350 kNm > Mu_lim = 303.12 kNm)
+        loads_ex_m = FactoredLoads(M_u=350.0, V_u=50.0)
+        engine_m = IS456BeamDesignEngine(geometry=self.geom, materials=self.materials, loads=loads_ex_m)
+        sum_m = engine_m.run_design()
+        self.assertFalse(sum_m.is_overall_pass)
+        self.assertTrue(sum_m.flexure.is_doubly_reinforced_required)
+
+        # 2. Excessive shear (tau_v = 3.636 N/mm² > tau_c_max = 3.10 N/mm² for M25)
+        loads_ex_v = FactoredLoads(M_u=50.0, V_u=600.0)
+        engine_v = IS456BeamDesignEngine(geometry=self.geom, materials=self.materials, loads=loads_ex_v)
+        sum_v = engine_v.run_design()
+        self.assertFalse(sum_v.is_overall_pass)
+        self.assertFalse(sum_v.shear.is_section_safe_in_shear)
+
 
 if __name__ == "__main__":
     unittest.main()

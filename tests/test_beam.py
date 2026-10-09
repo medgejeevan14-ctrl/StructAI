@@ -68,6 +68,34 @@ class TestIS456BeamEngine(unittest.TestCase):
         self.assertFalse(res.is_overall_pass)
         self.assertTrue(res.flexure.is_doubly_reinforced_required)
 
+    def test_end_to_end_excessive_shear_stress_fails(self):
+        """Test end-to-end design where tau_v > tau_c_max triggers overall failure."""
+        geom = BeamGeometry(b=200.0, D=400.0, d=350.0, span=4000.0)
+        materials = MaterialProperties(f_ck=20.0, f_y=415.0)
+        loads = FactoredLoads(M_u=50.0, V_u=200.0)  # tau_v = 200,000 / (200*350) = 2.857 N/mm² > tau_c_max (2.80)
+
+        engine = IS456BeamDesignEngine(geometry=geom, materials=materials, loads=loads)
+        res = engine.run_design()
+
+        self.assertFalse(res.is_overall_pass)
+        self.assertFalse(res.shear.is_section_safe_in_shear)
+
+    def test_end_to_end_insufficient_ast_min_fails(self):
+        """Test end-to-end design where provided Ast < Ast_min triggers overall failure."""
+        geom = BeamGeometry(b=300.0, D=600.0, d=550.0, span=6000.0)
+        materials = MaterialProperties(f_ck=25.0, f_y=500.0)
+        loads = FactoredLoads(M_u=50.0, V_u=30.0)
+
+        engine = IS456BeamDesignEngine(
+            geometry=geom,
+            materials=materials,
+            loads=loads,
+            Ast_provided_mm2=150.0,  # 150 mm² < Ast_min (280.5 mm²)
+        )
+        res = engine.run_design()
+
+        self.assertFalse(res.is_overall_pass)
+
 
 if __name__ == "__main__":
     unittest.main()

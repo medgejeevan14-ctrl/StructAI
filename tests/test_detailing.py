@@ -87,6 +87,48 @@ class TestIS456Detailing(unittest.TestCase):
         fig6_check = [c for c in detailing_res.code_checks if "Fig 6" in c.check_name][0]
         self.assertEqual(fig6_check.status, CheckStatus.NOT_IMPLEMENTED)
 
+    def test_deflection_span_greater_than_10m(self):
+        """Test span > 10m reduction factor (10 / span_m) for deflection control."""
+        geom_12m = BeamGeometry(b=300.0, D=600.0, d=550.0, span=12000.0, support_condition=SupportCondition.SIMPLY_SUPPORTED)
+        flex_res = design_flexure_singly_reinforced(geom_12m, self.materials, self.loads)
+        shear_res = design_shear(geom_12m, self.materials, self.loads, Ast_provided_mm2=flex_res.governing_Ast_mm2)
+
+        detailing_res = perform_detailing_checks(
+            geometry=geom_12m,
+            materials=self.materials,
+            flexure_res=flex_res,
+            shear_res=shear_res,
+            Ast_provided_mm2=flex_res.governing_Ast_mm2,
+        )
+
+        # Basic L/d = 20 * (10 / 12) = 16.667
+        self.assertAlmostEqual(detailing_res.deflection.span_10m_correction_factor, 10.0 / 12.0, places=3)
+        self.assertAlmostEqual(detailing_res.deflection.basic_span_depth_ratio, 20.0 * (10.0 / 12.0), places=2)
+
+    def test_development_length_m25_fe500(self):
+        """Test independently verified Ld benchmark for M25 concrete & Fe500 HYSD bar."""
+        dev_res = calculate_development_length(f_y=500.0, f_ck=25.0, bar_diameter_mm=20.0, is_hysd=True)
+        self.assertEqual(dev_res.tau_bd_plain_Nmm2, 1.40)
+        self.assertAlmostEqual(dev_res.tau_bd_design_Nmm2, 2.24, places=2)
+        self.assertAlmostEqual(dev_res.ld_phi_ratio, 48.55, places=2)
+        self.assertAlmostEqual(dev_res.ld_mm, 970.98, places=2)
+
+    def test_deflection_span_boundary_at_10m_and_longer(self):
+        """Test deflection span correction factor exact boundary at 10m, 10.01m, and 15m."""
+        # 10.0 m span => Factor = 1.000
+        geom_10m = BeamGeometry(b=300.0, D=600.0, d=550.0, span=10000.0, support_condition=SupportCondition.SIMPLY_SUPPORTED)
+        flex_res = design_flexure_singly_reinforced(geom_10m, self.materials, self.loads)
+        shear_res = design_shear(geom_10m, self.materials, self.loads, Ast_provided_mm2=flex_res.governing_Ast_mm2)
+        det_10m = perform_detailing_checks(geom_10m, self.materials, flex_res, shear_res, Ast_provided_mm2=flex_res.governing_Ast_mm2)
+        self.assertEqual(det_10m.deflection.span_10m_correction_factor, 1.00)
+        self.assertEqual(det_10m.deflection.basic_span_depth_ratio, 20.0)
+
+        # 15.0 m span => Factor = 10 / 15 = 0.6667
+        geom_15m = BeamGeometry(b=300.0, D=600.0, d=550.0, span=15000.0, support_condition=SupportCondition.SIMPLY_SUPPORTED)
+        det_15m = perform_detailing_checks(geom_15m, self.materials, flex_res, shear_res, Ast_provided_mm2=flex_res.governing_Ast_mm2)
+        self.assertAlmostEqual(det_15m.deflection.span_10m_correction_factor, 10.0 / 15.0, places=3)
+        self.assertAlmostEqual(det_15m.deflection.basic_span_depth_ratio, 20.0 * (10.0 / 15.0), places=2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -69,8 +69,39 @@ class TestIS456Flexure(unittest.TestCase):
 
     def test_doubly_reinforced_trigger(self):
         """Test that applied moment > Mu_lim triggers doubly reinforced flag."""
-        # Mu_lim is 137.86 kNm for this section. Apply Mu = 160 kNm.
+        # Mu_lim is 139.69 kNm for this section. Apply Mu = 160 kNm.
         loads = FactoredLoads(M_u=160.0, V_u=50.0)
+        res = design_flexure_singly_reinforced(self.geom, self.materials, loads)
+
+        self.assertTrue(res.is_doubly_reinforced_required)
+        self.assertFalse(res.is_under_reinforced)
+
+    def test_flexure_benchmark_fe500_m25(self):
+        """Test independently verified benchmark for M25 concrete & Fe500 steel (b=300, d=550)."""
+        geom_b2 = BeamGeometry(b=300.0, D=600.0, d=550.0)
+        mat_b2 = MaterialProperties(f_ck=25.0, f_y=500.0)
+        loads_b2 = FactoredLoads(M_u=180.0, V_u=50.0)
+        res = design_flexure_singly_reinforced(geom_b2, mat_b2, loads_b2)
+
+        self.assertAlmostEqual(res.M_u_lim_kNm, 303.12, places=2)
+        self.assertAlmostEqual(res.Ast_req_mm2, 837.81, places=2)
+        self.assertAlmostEqual(res.xu_mm, 134.98, places=2)
+        self.assertAlmostEqual(res.Ast_min_mm2, 280.50, places=2)
+        self.assertAlmostEqual(res.Ast_max_mm2, 7200.00, places=2)
+        self.assertTrue(res.is_under_reinforced)
+        self.assertFalse(res.is_doubly_reinforced_required)
+
+    def test_flexure_exactly_at_limiting_moment(self):
+        """Test flexural behavior when applied moment Mu equals Mu_lim (139.68 kNm)."""
+        loads = FactoredLoads(M_u=139.68, V_u=50.0)
+        res = design_flexure_singly_reinforced(self.geom, self.materials, loads)
+
+        self.assertTrue(res.is_under_reinforced)
+        self.assertFalse(res.is_doubly_reinforced_required)
+
+    def test_flexure_above_limiting_moment_classification(self):
+        """Test flexural classification when Mu exceeds Mu_lim by +1 kNm."""
+        loads = FactoredLoads(M_u=140.69, V_u=50.0)
         res = design_flexure_singly_reinforced(self.geom, self.materials, loads)
 
         self.assertTrue(res.is_doubly_reinforced_required)

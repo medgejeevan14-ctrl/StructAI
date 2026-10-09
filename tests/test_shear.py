@@ -90,6 +90,52 @@ class TestIS456Shear(unittest.TestCase):
 
         self.assertFalse(res.is_section_safe_in_shear)
 
+    def test_shear_benchmark_m25_high_shear(self):
+        """Test independently verified shear benchmark for M25, Fe500, Vu = 220 kN (b=300, d=550)."""
+        geom_b2 = BeamGeometry(b=300.0, D=600.0, d=550.0)
+        mat_b2 = MaterialProperties(f_ck=25.0, f_y=500.0, f_yv=500.0)
+        loads_b2 = FactoredLoads(M_u=180.0, V_u=220.0)
+        stirrups = StirrupDetails(num_legs=2, bar_diameter=8.0, spacing=150.0)
+
+        res = design_shear(geom_b2, mat_b2, loads_b2, Ast_provided_mm2=837.81, stirrup_details=stirrups)
+
+        self.assertAlmostEqual(res.tau_v_Nmm2, 1.333, places=3)
+        self.assertAlmostEqual(res.tau_c_Nmm2, 0.4925, places=3)
+        self.assertAlmostEqual(res.tau_c_max_Nmm2, 3.10, places=2)
+        self.assertAlmostEqual(res.V_us_kN, 138.74, places=2)
+        self.assertAlmostEqual(res.sv_req_calc_mm, 173.36, places=2)
+        self.assertAlmostEqual(res.sv_req_min_rebar_mm, 364.42, places=2)
+        self.assertAlmostEqual(res.sv_max_code_limit_mm, 300.00, places=1)
+        self.assertTrue(res.shear_reinforcement_required)
+        self.assertTrue(res.is_section_safe_in_shear)
+
+    def test_sub_m15_concrete_raises_exception(self):
+        """Test that concrete grades below M15 raise ValueError as per IS 456 Table 19 notes."""
+        with self.assertRaises(ValueError) as ctx:
+            interpolate_tau_c(0.5, 10.0)
+        self.assertIn("below M15", str(ctx.exception))
+
+    def test_table_19_multi_grade_m30_m35_m40_benchmarks(self):
+        """Test Table 19 exact & interpolated tau_c values for M30, M35, M40, M50 concrete."""
+        # M30 concrete grade benchmarks
+        self.assertAlmostEqual(interpolate_tau_c(0.15, 30.0), 0.29, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(1.00, 30.0), 0.66, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(2.00, 30.0), 0.87, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(3.00, 30.0), 0.98, places=3)
+
+        # M35 concrete grade benchmarks
+        self.assertAlmostEqual(interpolate_tau_c(0.15, 35.0), 0.29, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(1.50, 35.0), 0.79, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(3.00, 35.0), 1.04, places=3)
+
+        # M40 concrete grade benchmarks (including interpolation & clamping above 3.00%)
+        self.assertAlmostEqual(interpolate_tau_c(0.15, 40.0), 0.30, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(3.00, 40.0), 1.09, places=3)
+        self.assertAlmostEqual(interpolate_tau_c(3.50, 40.0), 1.09, places=3)  # pt > 3.0% capped to 3.0%
+
+        # M50 concrete grade (capped to M40 per Table 19 Note)
+        self.assertAlmostEqual(interpolate_tau_c(3.00, 50.0), 1.09, places=3)
+
 
 if __name__ == "__main__":
     unittest.main()
