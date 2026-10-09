@@ -1,112 +1,92 @@
 # StructAI
 
-A modular Python framework for structural engineering design automation and IS 456:2000 code compliance checks.
-
-Released under the **MIT License**.
+**StructAI** is a Python engineering framework and Streamlit application for automated structural concrete design per **IS 456:2000**, paired with Anthropic Claude for AI-powered design explanations.
 
 ---
 
-## 1. Project Description
+## 📌 Overview & Engineering Safety Boundary
 
-**StructAI** is an open-source, modular Python framework developed to automate reinforced concrete structural design calculations and code compliance audits per **IS 456:2000** (Indian Standard Code of Practice for Plain and Reinforced Concrete).
+Traditional structural engineering software often operates as a black box without clear audit trails, while raw generative AI models can hallucinate engineering formulas and code safety checks.
 
-It provides a transparent domain engine with full mathematical traceability, explicit clause references, and step-by-step intermediate calculation logging.
-
----
-
-## 2. Project Status
-
-- **Current Version:** `v0.1.0`
-- **Phase 1 Engine:** Reinforced Concrete Rectangular Beam Design Engine completed.
-- **Automated Tests:** 18 / 18 unit tests passing cleanly.
-- **Verification:** Comprehensive hand-calculated verification report included ([`examples/verification_report.md`](file:///c:/JEEVAN/StructAI/examples/verification_report.md)).
-- **Development Status:** Active open-source development planned across multi-phase roadmap.
+StructAI addresses this with a strict **Deterministic Engine / AI Safety Boundary**:
+- **Deterministic Python Engine**: Calculates all flexural, shear, development length, and serviceability deflection checks strictly according to IS 456:2000 rules.
+- **Claude Explanation Layer**: Reads verified engine outputs to generate natural-language technical rationales and code explanations without altering any numerical results.
 
 ---
 
-## 3. Implemented Functionality & IS 456:2000 Modules
+## 📁 Repository Structure
 
-StructAI v0.1.0 includes the following core engineering design modules:
-
-1. **Flexural Design (Annex G & Clause 38.1):**
-   - Limiting neutral axis depth ratio ($x_{u,max}/d$) for Fe 250, Fe 415, Fe 500, and Fe 550 steel grades.
-   - Limiting moment of resistance ($M_{u,lim}$) calculation for rectangular sections.
-   - Exact quadratic solution for required tension reinforcement ($A_{st,req}$) for singly reinforced sections.
-   - Code tension steel checks: Minimum tension steel ($A_{st,min}$, Clause 26.5.1.1 a) and Maximum tension steel ($A_{st,max}$, Clause 26.5.1.1 b).
-
-2. **Shear Design (Clause 40 & Clause 26.5.1):**
-   - Nominal shear stress ($\tau_v = V_u / b d$, Clause 40.1).
-   - Maximum permissible shear stress ($\tau_{c,max}$, Clause 40.2.3 Table 20).
-   - Concrete design shear strength ($\tau_c$, Clause 40.2.1 Table 19) via exact 2D bilinear interpolation, with explicit error handling for concrete grades below M15.
-   - Shear stirrup design for net shear force ($V_{us} = V_u - \tau_c b d$, Clause 40.4).
-   - Minimum shear reinforcement limit ($s_{v,min}$, Clause 26.5.1.6) and maximum stirrup spacing limit ($\min(0.75 d, 300\text{ mm})$, Clause 26.5.1.5).
-
-3. **Development Length (Clause 26.2.1 & Clause 26.2.1.1):**
-   - Base design bond stress ($\tau_{bd,plain}$) lookup for plain bars in tension.
-   - $+60\%$ adjustment factor for deformed/HYSD bars.
-   - $+25\%$ adjustment factor for bars in compression.
-   - Computation of design bond stress ($\tau_{bd,design}$), development length ratio ($L_d/\phi$), and development length ($L_d$) in mm.
-
-4. **Deflection Control & Serviceability (Clause 23.2.1):**
-   - Basic span-to-effective-depth ratios ($(L/d)_{basic}$): Cantilever ($7$), Simply Supported ($20$), Continuous ($26$).
-   - Span $> 10\text{ m}$ correction factor ($10 / \text{span in meters}$).
-   - Tension reinforcement modification factor ($F_1$ / $K_t$) via digitized 2D grid bilinear interpolation of **IS 456 Fig. 4**.
-   - Compression reinforcement modification factor ($F_2$ / $K_c$) via digitized 1D grid interpolation of **IS 456 Fig. 5**.
-
-5. **Code Audit & Traceability:**
-   - Unified engine ([`IS456BeamDesignEngine`](file:///c:/JEEVAN/StructAI/structai/codes/is456/beam.py)) orchestrating flexure, shear, and detailing.
-   - Every code check outputs check name, clause reference, demand/input, capacity/limit, unit, and status (`PASS`, `FAIL`, `WARNING`, `NOT_IMPLEMENTED`).
-
----
-
-## 4. Development Roadmap
-
-- **Phase 1 — RC Beam Design [COMPLETED]**
-  - Singly reinforced flexural limit state, shear stirrup design, development length, and deflection control checks.
-- **Phase 2 — Engineering Workflow Improvements**
-  - Doubly reinforced rectangular beams, flanged sections (T-beams/L-beams), and combined torsion design (Clause 41).
-- **Phase 3 — Excel Integration**
-  - Automated spreadsheet export/import for calculation sheets and structural schedules.
-- **Phase 4 — ETABS Result Integration**
-  - Parser and design validation engine for ETABS design output forces and member geometry.
-- **Phase 5 — AI Engineering Assistant**
-  - Natural language calculation querying, code lookup assistant, and automated design recommendations.
-- **Phase 6 — IS 456:2025 Draft Comparison**
-  - Comparative code analysis and impact reports against proposed IS 456 revision drafts.
-
----
-
-## 5. Known Limitations (Phase 1 Scope)
-
-- **Doubly Reinforced Flexure:** Doubly reinforced design ($M_u > M_{u,lim}$) flags a requirement warning and is postponed to Phase 2.
-- **Flanged Sections:** T-Beam / L-Beam flexural design and Fig. 6 deflection factor $F_3$ are currently marked as `NOT_IMPLEMENTED`.
-- **Torsion:** Combined shear, bending, and torsion (Clause 41) is not included in Phase 1.
-- **Columns & Slabs:** Compression members (Clause 39) and slabs (Clause 24) are planned for future releases.
-
----
-
-## 6. Engineering Disclaimer
-
-> [!CAUTION]
-> **IMPORTANT DISCLAIMER:**
-> **StructAI is an automated calculation utility intended for educational, research, and technical workflow automation purposes.**
-> **StructAI is NOT a substitute for independent engineering verification, professional judgment, or official design review by a qualified Licensed Professional Structural Engineer.**
-> **Always verify critical structural calculations independently before construction or professional execution.**
-
----
-
-## 7. License
-
-Distributed under the **MIT License**. See [`LICENSE`](file:///c:/JEEVAN/StructAI/LICENSE) for full details.
-
----
-
-## 8. Installation & Usage
-
-```bash
-# Run automated test suite
-python -m unittest discover -s tests
-
-# Run sample beam calculation
-python examples/sample_beam_calc.py
+```text
+StructAI/
+├── structai/                 # Engineering engine & AI assistance package
+│   ├── core/                 # Datatypes & validation schemas
+│   ├── codes/is456/          # IS 456:2000 beam design modules
+│   └── ai/                   # Claude API integration & prompt engine
+├── app.py                    # Streamlit interactive web dashboard
+├── tests/                    # 52 automated unit & integration tests
+└── requirements.txt          # Python dependencies
 ```
+
+---
+
+## ⚙️ Core Implemented Capabilities (IS 456:2000)
+
+- **Flexural Design**: Limiting moment of resistance ($M_{u,lim}$), singly reinforced tension steel ($A_{st}$), and min/max steel checks (Annex G & Cl 38.1).
+- **Shear Design**: Nominal shear stress ($\tau_v$), concrete shear strength ($\tau_c$, Table 19 2D interpolation), max shear limit ($\tau_{c,max}$, Table 20), and stirrup spacing ($s_v$, Cl 40 & Cl 26.5.1).
+- **Detailing & Serviceability**: Tension bond development length ($L_d$, Cl 26.2.1) and span-to-effective-depth ratio deflection checks ($L/d$, Fig. 4/5 interpolation, Cl 23.2.1).
+- **Interactive UI & Audit**: Streamlit dashboard (`app.py`) providing interactive design inputs, clause audit tables (`PASS`/`FAIL`), and optional Claude explanations.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Installation
+```bash
+git clone https://github.com/medgejeevan14-ctrl/StructAI.git
+cd StructAI
+pip install -r requirements.txt
+```
+
+### 2. Run Application
+
+**macOS / Linux (Bash):**
+```bash
+export ANTHROPIC_API_KEY="your-api-key-here"  # Optional
+streamlit run app.py
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:ANTHROPIC_API_KEY="your-api-key-here"  # Optional
+streamlit run app.py
+```
+
+### 3. Run Tests
+```bash
+python -m unittest discover -s tests
+```
+*Current test suite: **52 unit and integration tests** passing.*
+
+---
+
+## ⚠️ Scope & Engineering Limitations
+
+- **Current Scope**: Rectangular singly reinforced RC beams ($M_u \le M_{u,lim}$).
+- **Unsupported Features**: Doubly reinforced sections ($M_u > M_{u,lim}$), flanged sections (T/L-beams), and combined torsion are currently marked as `NOT_IMPLEMENTED`.
+- **Engineering Use**: StructAI is an automated design utility. All structural calculations must be verified by a Licensed Professional Structural Engineer.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] **Phase 1–4**: Singly reinforced beam engine, Streamlit UI, Claude AI explanation assistant, and 52-test validation suite.
+- [ ] **Phase 5**: Doubly reinforced beams and flanged sections (T-beams / L-beams).
+- [ ] **Phase 6**: Combined shear, bending, and torsion per Clause 41.
+- [ ] **Phase 7**: Additional element design (Columns, Slabs, Footings).
+- [ ] **Phase 8**: ETABS / STAAD structural analysis output import.
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
