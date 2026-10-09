@@ -22,7 +22,7 @@ from structai.codes.is456.shear import design_shear
 from structai.codes.is456.detailing import perform_detailing_checks
 
 
-@dataclass
+@dataclass(frozen=True)
 class BeamDesignSummary:
     """Comprehensive summary of IS 456 beam design analysis."""
     geometry: BeamGeometry
